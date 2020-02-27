@@ -10,12 +10,13 @@ int neighbors[N][NEIGHBOR];
 
 static void mark_adjacent(bool adjacent[ROW][COL], int row, int col)
 {
-  for (int i = 0; i < NUM; ++i) {
+  for (int i = 0; i < NUM; ++i) {//mark the whole row and col
     adjacent[row][i] = true;
     adjacent[i][col] = true;
   }
-  int top = (row/3)*3;
-  int left = (col/3)*3;
+  int top = (row/3)*3;// row on top of board
+  int left = (col/3)*3;//col on left of board
+  //mark the whole board
   adjacent[top][left] = true;
   adjacent[top][left+1] = true;
   adjacent[top][left+2] = true;
@@ -28,6 +29,7 @@ static void mark_adjacent(bool adjacent[ROW][COL], int row, int col)
 }
 
 static void collect_neighbors(const bool adjacent[ROW][COL], int row, int col, int myneighbors[NEIGHBOR])
+//collect all neighbors into "myneighbors"(=neighbors[me], in which 'me' is a serial index= y*COL+x)
 {
   int n = 0;
   for (int y = 0; y < ROW; ++y) {
@@ -58,7 +60,8 @@ static void print_neighbors(const bool adjacent[ROW][COL], int row, int col, int
   puts("\n");
 }
 
-/*public*/ void init_neighbors()
+/*public*/ 
+void init_neighbors()
 {
   for (int row = 0; row < ROW; ++row) {
     for (int col = 0; col < COL; ++col) {
@@ -91,6 +94,7 @@ bool solved()
   }
 
   for (int col = 0; col < COL; ++col) {
+  //check colomn
     int occurs[10] = { 0 };
     for (int row = 0; row < ROW; ++row) {
       int val = chess[row][col];
@@ -102,6 +106,7 @@ bool solved()
       return false;
   }
 
+//check board
   for (int row = 0; row < ROW; row += 3) {
     for (int col = 0; col < COL; col += 3) {
       int occurs[10] = { 0 };

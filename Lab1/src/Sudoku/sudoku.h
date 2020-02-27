@@ -2,6 +2,7 @@
 #define SUDOKU_H
 
 const bool DEBUG_MODE = false;
+//NEIGHBOR: for a certain digit, it needs to match with 20 ambient digits which are at the colomn(6), row(6) and board(8).
 enum { ROW=9, COL=9, N = 81, NEIGHBOR = 20 };
 const int NUM = 9;
 
