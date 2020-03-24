@@ -5,63 +5,64 @@
 
 #include "sudoku.h"
 
-int board[N];
-int spaces[N];
-int nspaces;
-int (*chess)[COL] = (int (*)[COL])board;
+//int board[N];
+//int spaces[N];
+//int nspaces;
+//int (*chess)[COL] = (int (*)[COL])board;
 
-static void find_spaces()
+static void find_spaces(Datas* d_ele)
 {
-  nspaces = 0;
+  d_ele->nspaces = 0;
   for (int cell = 0; cell < N; ++cell) {
-    if (board[cell] == 0)
-      spaces[nspaces++] = cell;
+    if (d_ele->board[cell] == 0)
+      d_ele->spaces[d_ele->nspaces++] = cell;
   }
 }
 
-void input(const char in[N])
+void input(Datas* d_ele, const char in[N])
 {
+	d_ele->chess= (int (*)[COL])d_ele ->board;
   for (int cell = 0; cell < N; ++cell) {
-    board[cell] = in[cell] - '0';
-    assert(0 <= board[cell] && board[cell] <= NUM);
+    d_ele->board[cell] = in[cell]- '0';
+    assert(0 <= d_ele->board[cell] && d_ele->board[cell] <= NUM);
   }
-  find_spaces();
+  find_spaces(d_ele);
 }
 
-bool available(int guess, int cell)
+bool available(Datas* d_ele, int guess, int cell)
 {
   for (int i = 0; i < NEIGHBOR; ++i) {
-    int neighbor = neighbors[cell][i];
-    if (board[neighbor] == guess) {
+    int neighbor =  d_ele->neighbors[cell][i];
+    if ( d_ele->board[neighbor] == guess) {
       return false;
     }
   }
   return true;
 }
 
-bool solve_sudoku_basic(int which_space)
+bool solve_sudoku_basic(Datas* d_ele, int which_space)
 {
-  if (which_space >= nspaces) {
+  if (which_space >=  d_ele->nspaces) {
     return true;
   }
 
   // find_min_arity(which_space);
-  int cell = spaces[which_space];
+  int cell =  d_ele->spaces[which_space];
 
   for (int guess = 1; guess <= NUM; ++guess) {
-    if (available(guess, cell)) {
+    if (available(d_ele, guess, cell)) {
       // hold
-      assert(board[cell] == 0);
-      board[cell] = guess;
+      assert( d_ele->board[cell] == 0);
+       d_ele->board[cell] = guess;
 
       // try
-      if (solve_sudoku_basic(which_space+1)) {
+      if (solve_sudoku_basic(d_ele, which_space+1)) {
         return true;
       }
 
       // unhold
-      assert(board[cell] == guess);
-      board[cell] = 0;
+      assert( d_ele->board[cell] == guess);
+       d_ele->board[cell] = 0;
     }
   }
   return false;
