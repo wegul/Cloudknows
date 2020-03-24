@@ -3,5 +3,5 @@ CXXFLAGS+=-Wall -Wextra
 
 all: sudoku
 
-sudoku: main.cc neighbor.cc sudoku_basic.cc sudoku_min_arity.cc sudoku_min_arity_cache.cc sudoku_dancing_links.cc
-	g++ -pthread -O2 -o $@ $^ 
+sudoku: main.cc neighbor.cc sudoku_basic.cc sudoku_min_arity.cc sudoku_min_arity_cache.cc sudoku_dancing_links.cc thread.h
+	g++ -pthread -O2 -o  $@ $^ 
