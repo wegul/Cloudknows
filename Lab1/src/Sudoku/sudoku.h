@@ -19,7 +19,6 @@ struct Datas{//cannot be modified by key_word EXTERN
 	int (*chess)[COL];
 };
 struct Ans{
-	int q[N];
 	int a[N];
 };
 void print(Datas* d_ele);
