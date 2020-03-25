@@ -13,22 +13,23 @@ const int NUM = 9;
 //extern int nspaces;
 //extern int (*chess)[COL];
 struct Datas{//cannot be modified by key_word EXTERN
+	int serial;
 	int neighbors[N][NEIGHBOR];
 	int board[N];
-	int spaces[N];
-	int nspaces;
 	int (*chess)[COL];
+};
+struct Ans{
+	int q[N];
+	int a[N];
 };
 void print(Datas* d_ele);
 void init_neighbors();
 void input(Datas* d_ele, const char in[N]);
-void init_cache(Datas* d_ele);
+
 
 bool available(Datas* d_ele, int guess, int cell);
 
-bool solve_sudoku_basic(Datas* d_ele, int which_space);
-bool solve_sudoku_min_arity(Datas* d_ele, int which_space);
-bool solve_sudoku_min_arity_cache(Datas* d_ele, int which_space);
+
 bool solve_sudoku_dancing_links(Datas* d_ele, int unused);
 bool solved(Datas* d_ele);
 #endif
