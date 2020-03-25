@@ -46,18 +46,30 @@ void* reader(void* temp){
 		//  cout<<"broadcast  "<<total<<'\n';
 		}
 	  }
+	 // cout<<"reader finished\n";
+	  pthread_exit(NULL);
 	pthread_cond_destroy(&dataready);
 }
 
 void* solver(void*){ 
-	while(total_solved<1000){
+	while(1){		
+			cout<<pthread_self()<<"lock\n";
 			pthread_mutex_lock(&mutex);
 			while(list.empty()){
-				cout<<"total_solved is=="<<total_solved<<"--thread awaits--"<<pthread_self()<<'\n';
+				//cout<<"total_solved is=="<<total_solved<<"--thread awaits--"<<pthread_self()<<'\n';
+				while(total_solved>=1000){
+					//cout<<pthread_self()<<"  exit!!!!!!!!!\n";
+					pthread_mutex_unlock(&mutex);//must release it before it quits otherwise causing deadlock 
+					pthread_exit(NULL);
+				}
+				//cout<<pthread_self()<<"awaits-----\n";
 				pthread_cond_wait(&dataready, &mutex);
 			}
+
 				Datas *d_ele=list.front();
 				list.pop_front();
+				pthread_mutex_unlock(&mutex);
+				cout<<pthread_self()<<"unlock\n";
 				_a=new Ans();
 				for(int i=0;i<N;++i){
 					_a->q[i]=d_ele->board[i];
@@ -68,6 +80,7 @@ void* solver(void*){
 						_a->a[i]=d_ele->board[i];
 					}
 					results[d_ele->serial]=_a;
+					
 				  if (!solved(d_ele)){
 				  	assert(0);
 				  }
@@ -75,8 +88,8 @@ void* solver(void*){
 				  else {
 					printf("No: ===");
 				  }
-				  pthread_mutex_unlock(&mutex);
-				  cout<<"\n serial is"<<d_ele->serial<<'\n';
+				  
+				  //cout<<"\n serial is"<<d_ele->serial<<'\n';
 	}
 	pthread_exit(0);
 }

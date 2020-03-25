@@ -34,25 +34,17 @@ int main(int argc, char* argv[])
     int64_t end = now();
   double sec = (end-start)/1000000.0;
   printf("%f sec %f ms each %d\n", sec, 1000*sec/total, total_solved);
-//map<int,Ans*>::iterator iter;
-//for (iter = results.begin();iter != results.end(); iter++){
-//	cout<<"serial is=="<<iter->first<<'\n';
-//	for(int i=0;i<N;++i)
-//        cout << iter->second->q[i];
-//     cout<<'\n';
-//     for(int i=0;i<N;++i)
-//        cout << iter->second->a[i];
-//      cout<<'\n';
-// }
+map<int,Ans*>::iterator iter;
+for (iter = results.begin();iter != results.end(); iter++){
+	cout<<"serial is=="<<iter->first<<'\n';
+	for(int i=0;i<N;++i)
+        cout << iter->second->q[i];
+     cout<<'\n';
+     for(int i=0;i<N;++i)
+        cout << iter->second->a[i];
+      cout<<'\n';
+ }
 
-
-
-
- //int64_t start = now();
-
-  //int64_t end = now();
-  //double sec = (end-start)/1000000.0;
-  //printf("%f sec %f ms each \ntotal=%d \n", sec, 1000*sec/total, total_solved);
 
   return 0;
 }
