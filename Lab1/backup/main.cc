@@ -4,11 +4,12 @@
 #include <string.h>
 #include <sys/time.h>
 #include<iostream>
+#include<stdlib.h>
 using namespace std;
 #include"dance.h"
 #include<deque>
 #include<map>
-
+#include <sys/sysinfo.h>
 int64_t now()
 {
   struct timeval tv;
@@ -23,6 +24,7 @@ struct Ans{
 	int serial;
 	int answer[N];
 };
+int limit=0;
 int total;
 int total_solved;
 deque<Ques>list;
@@ -50,7 +52,7 @@ void* solver(void*){
 	while(1){
 			pthread_mutex_lock(&mutex2);
 			while(list.empty()){
-				if(total_solved>=1000){
+				if(total_solved>=limit){
 				pthread_mutex_unlock(&mutex2);
 				pthread_exit(NULL);
 				}
@@ -67,9 +69,7 @@ void* solver(void*){
 			pthread_mutex_unlock(&mutex2);
 		  if (dan.solve()) {
 		    results[a.serial]=a;
-		    if (!dan.solved())
-		      assert(0);
-		  }
+	  }
 		  else {
 		  printf("No:");
 		  for(int i=0;i<N;i++){
@@ -77,38 +77,41 @@ void* solver(void*){
 		  }
 		  cout<<'\n';
 		  }
-		//pthread_mutex_unlock(&mutex2);
      }
 }
+
 int main(int argc, char* argv[])
 {
-  FILE* fp = fopen(argv[1], "r");
+  char *ques_num=&argv[1][4];
+  limit=atoi(ques_num);
 
-  int64_t start = now();
+  FILE* fp = fopen(argv[1], "r");
+	int nprocs = get_nprocs_conf ();
+	const int PROC=nprocs;
   pthread_cond_init(&dataready, NULL);
-  pthread_t file_read;
+  pthread_t file_read; 
+   int64_t start = now();
   pthread_create(&file_read,NULL,reader,(void*)(fp)); 
-  
-  pthread_t sudoku_solve[4];
+
+  pthread_t sudoku_solve[PROC];
  
-  for(int i=0;i<4;++i){
+  for(int i=0;i<PROC;++i){
     	pthread_create(&sudoku_solve[i], NULL, solver, NULL);
   }
   
-   for(int i=0;i<4;++i){
+   for(int i=0;i<PROC;++i){
     	pthread_join(sudoku_solve[i], NULL);
   }
+  int64_t end = now(); 
   pthread_join(file_read,NULL);
-  int64_t end = now();
   double sec = (end-start)/1000000.0;
   printf("%f sec %f ms each %d\n", sec, 1000*sec/total, total_solved);
-// map<int,Ans>::iterator iter;
-//for (iter = results.begin();iter != results.end(); iter++){
-//	cout<<"serial is=="<<iter->first<<'\n';
-//     for(int i=0;i<N;++i)
-//        cout << iter->second.answer[i];
-//      cout<<'\n';
-// }
+  for(int i=1;i<=limit;++i){
+  	 for(int j=0;j<N;++j)
+        cout << results[i].answer[j];
+      cout<<'\n';
+  }
+
 
   return 0;
 }
