@@ -27,7 +27,7 @@ int total;
 int total_solved;
 deque<Ques>list;
 map<int, Ans>results;
-pthread_mutex_t mutex1=PTHREAD_MUTEX_INITIALIZER, mutex2=PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex1=PTHREAD_MUTEX_INITIALIZER, mutex2=PTHREAD_MUTEX_INITIALIZER,mutex3=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t dataready;
 void* reader(void* temp){
 	FILE* fp =(FILE*)temp;
@@ -45,21 +45,19 @@ void* reader(void* temp){
     }
   }
   //pthread_mutex_destroy(&mutex1);
-  cout<<"cond destroyed\n";
-  pthread_cond_destroy(&dataready);
+  //pthread_cond_destroy(&dataready);
 }
 void* solver(void*){
 	while(1){
+			pthread_mutex_lock(&mutex2);
 			while(list.empty()){
 				cout<<"wait\n";
-				pthread_cond_wait(&dataready, &mutex2);
 				if(total_solved>=1000){
-				pthread_mutex_unlock(&mutex2); 
-				cout<<"exit!!\n";
+				pthread_mutex_unlock(&mutex2);
 				pthread_exit(NULL);
 				}
+				//pthread_cond_wait(&dataready, &mutex2);
 			}
-			pthread_mutex_lock(&mutex2);
 			Ans a;
 			a.serial=list.front().serial;
 			for(int i=0;i<N;++i){
@@ -67,27 +65,22 @@ void* solver(void*){
 			}
 			list.pop_front(); 
 			pthread_mutex_unlock(&mutex2);
+			
 			Dance dan(a.answer);
 			dan.init_neighbors();
-			cout<<total_solved<<'\n';
-//			for(int i=0;i<N;++i){
-//			cout<<a.answer[i];
-//			}
-//			cout<<'\n';
+
 		  if (dan.solve()) { 
-//		  	for(int i=0;i<N;++i){
-//			cout<<a.answer[i];
-//			}
-//			cout<<"\n===========\n";
+			pthread_mutex_lock(&mutex3);
 		    results[a.serial]=a;
 		    ++total_solved;
+		    pthread_mutex_unlock(&mutex3);
 		    if (!dan.solved())
 		      assert(0);
 		  }
 		  else {
 		    printf("No:");
 		  }
-		  //cout<<total_solved<<"  unlock??\n";
+
      }
 }
 int main(int argc, char* argv[])
