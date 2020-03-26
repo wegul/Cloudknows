@@ -106,9 +106,6 @@ struct Dance
 
     Dance(int inout[81]) : inout_(inout), cur_node_(0)
     {
-//			for(int i=0;i<N;++i){
-//			board[i]=inout[i];
-//			}
 			board=inout;
 			nspaces = 0;
 		  for (int cell = 0; cell < N; ++cell) {

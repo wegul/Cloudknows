@@ -40,48 +40,54 @@ void* reader(void* temp){
       q.serial=total;
       memcpy(q.puz,puzzle,sizeof puzzle);
       list.push_back(q);  
-      //pthread_mutex_unlock(&mutex1); 
+     // pthread_mutex_unlock(&mutex1); 
       pthread_cond_broadcast(&dataready);
     }
   }
+  //pthread_mutex_destroy(&mutex1);
+  cout<<"cond destroyed\n";
   pthread_cond_destroy(&dataready);
 }
 void* solver(void*){
 	while(1){
-		pthread_mutex_lock(&mutex2);
-		//cout<<pthread_self()<<"lock\n";
 			while(list.empty()){
 				cout<<"wait\n";
 				pthread_cond_wait(&dataready, &mutex2);
-				if(total>=1000){
+				if(total_solved>=1000){
 				pthread_mutex_unlock(&mutex2); 
+				cout<<"exit!!\n";
 				pthread_exit(NULL);
 				}
 			}
-			
-			
+			pthread_mutex_lock(&mutex2);
 			Ans a;
 			a.serial=list.front().serial;
 			for(int i=0;i<N;++i){
 				a.answer[i]=list.front().puz[i]-'0';
 			}
-			list.pop_front();
+			list.pop_front(); 
 			pthread_mutex_unlock(&mutex2);
 			Dance dan(a.answer);
-
-		  if (dan.solve()) {
-		  //cout<<"fine\n";
-		   
+			dan.init_neighbors();
+			cout<<total_solved<<'\n';
+//			for(int i=0;i<N;++i){
+//			cout<<a.answer[i];
+//			}
+//			cout<<'\n';
+		  if (dan.solve()) { 
+//		  	for(int i=0;i<N;++i){
+//			cout<<a.answer[i];
+//			}
+//			cout<<"\n===========\n";
 		    results[a.serial]=a;
 		    ++total_solved;
-		     
 		    if (!dan.solved())
 		      assert(0);
 		  }
 		  else {
 		    printf("No:");
 		  }
-		  
+		  //cout<<total_solved<<"  unlock??\n";
      }
 }
 int main(int argc, char* argv[])
@@ -89,6 +95,7 @@ int main(int argc, char* argv[])
   FILE* fp = fopen(argv[1], "r");
 
   int64_t start = now();
+  pthread_cond_init(&dataready, NULL);
   pthread_t file_read;
   pthread_create(&file_read,NULL,reader,(void*)(fp));
   pthread_t sudoku_solve[2];
