@@ -26,6 +26,7 @@ const int kRow = 100, kCol = 200, kBox = 300;
 
 struct Dance
 {
+	
     Column* root_;
     int*    inout_;
     Column* columns_[400];
@@ -252,7 +253,7 @@ struct Dance
     }
 };
 
-bool solve_sudoku_dancing_links(Datas* d_ele,int unused)
+bool solve_sudoku_dancing_links(Datas* d_ele, int unused)
 {
   Dance d(d_ele->board);
   return d.solve();

@@ -1,8 +1,12 @@
+#ifndef DANCE_H
+#define DANCE_H
+
 #include <assert.h>
 #include <memory.h>
 #include <map>
 #include <vector>
-
+    #include<iostream>
+    using namespace std;
 #include "sudoku.h"
 using namespace std;
 
@@ -26,6 +30,12 @@ const int kRow = 100, kCol = 200, kBox = 300;
 
 struct Dance
 {
+	int neighbors[N][NEIGHBOR];
+	int *board;
+	int spaces[N];
+	int nspaces;
+	int (*chess)[COL];
+	
     Column* root_;
     int*    inout_;
     Column* columns_[400];
@@ -89,9 +99,21 @@ struct Dance
     {
         return kBox+box*10+val;
     }
+   void collect_neighbors(const bool adjacent[ROW][COL], int row, int col, int myneighbors[NEIGHBOR]);
+    bool solved();
+    void init_neighbors();
 
     Dance(int inout[81]) : inout_(inout), cur_node_(0)
     {
+			board=inout;
+			nspaces = 0;
+		  for (int cell = 0; cell < N; ++cell) {
+			if (board[cell] == 0)
+			  spaces[nspaces++] = cell;
+		  }
+		  chess= (int (*)[COL])board;
+		  
+		  
         stack_.reserve(100);
 
         root_ = new_column();
@@ -195,6 +217,7 @@ struct Dance
 
     bool solve()
     {
+
         if (root_->left == root_) {
             for (size_t i = 0; i < stack_.size(); ++i) {
                 Node* n = stack_[i];
@@ -207,10 +230,14 @@ struct Dance
                         val = n->name % 10;
                     n = n->right;
                 }
-
                 //assert(cell != -1 && val != -1);
                 inout_[cell] = val;
             }
+//            cout<<"dance solve_sudoku_dancing_\n";
+//            for(int i=0;i<N;++i){
+//            cout<<inout_[i];
+//            }cout<<'\n';
+            
             return true;
         }
 
@@ -252,8 +279,11 @@ struct Dance
     }
 };
 
-bool solve_sudoku_dancing_links(Datas* d_ele,int unused)
-{
-  Dance d(d_ele->board);
-  return d.solve();
-}
+//bool solve_sudoku_dancing_links( int *b, int seri)
+//{
+//	serial=seri;
+//  Dance dan(board);
+//  return d.solve();
+//}
+
+#endif

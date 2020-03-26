@@ -7,7 +7,6 @@
 #include <algorithm>
 #include<iostream>
 using namespace std;
-int neighbors[N][NEIGHBOR];
 
 static void mark_adjacent(bool adjacent[ROW][COL], int row, int col)
 {
@@ -61,23 +60,6 @@ static void print_neighbors(const bool adjacent[ROW][COL], int row, int col, int
   puts("\n");
 }
 
-/*public*/ 
-void init_neighbors()
-{
-  for (int row = 0; row < ROW; ++row) {
-    for (int col = 0; col < COL; ++col) {
-      bool adjacent[ROW][COL];
-      bzero(adjacent, sizeof adjacent);
-      mark_adjacent(adjacent, row, col);
-
-      int me = row*COL + col;
-      collect_neighbors(adjacent, row, col, neighbors[me]);
-
-      if (DEBUG_MODE)
-        print_neighbors(adjacent, row, col, neighbors[me]);
-    }
-  }
-}
 
 bool solved(Datas* d_ele)
 {
@@ -88,6 +70,7 @@ bool solved(Datas* d_ele)
     
     for (int col = 0; col < COL; ++col) {
       int val = d_ele->chess[row][col];
+      cout<<val;
       assert(1 <= val && val <= NUM);
       ++occurs[val];
     }
@@ -101,7 +84,7 @@ bool solved(Datas* d_ele)
     int occurs[10] = { 0 };
     for (int row = 0; row < ROW; ++row) {
       int val = d_ele->chess[row][col];
-      // assert(1 <= val && val <= NUM);
+       assert(1 <= val && val <= NUM);
       ++occurs[val];
     }
 

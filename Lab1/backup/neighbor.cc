@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <strings.h>
 
-#include "sudoku.h"
+#include"dance.h"
 
 #include <algorithm>
 #include<iostream>
 using namespace std;
-int neighbors[N][NEIGHBOR];
+
 
 static void mark_adjacent(bool adjacent[ROW][COL], int row, int col)
 {
@@ -29,7 +29,7 @@ static void mark_adjacent(bool adjacent[ROW][COL], int row, int col)
   adjacent[top+2][left+2] = true;
 }
 
-static void collect_neighbors(const bool adjacent[ROW][COL], int row, int col, int myneighbors[NEIGHBOR])
+void Dance:: collect_neighbors(const bool adjacent[ROW][COL], int row, int col, int myneighbors[NEIGHBOR])
 //collect all neighbors into "myneighbors"(=neighbors[me], in which 'me' is a serial index= y*COL+x)
 {
   int n = 0;
@@ -62,7 +62,7 @@ static void print_neighbors(const bool adjacent[ROW][COL], int row, int col, int
 }
 
 /*public*/ 
-void init_neighbors()
+void Dance::init_neighbors()
 {
   for (int row = 0; row < ROW; ++row) {
     for (int col = 0; col < COL; ++col) {
@@ -79,19 +79,19 @@ void init_neighbors()
   }
 }
 
-bool solved(Datas* d_ele)
+bool Dance::solved()
 {
-
+//cout<<"Dance solved\n";
   for (int row = 0; row < ROW; ++row) {
     // check row
-    int occurs[10] = { 0}; 
-    
+    int occurs[10] = { 0 };
     for (int col = 0; col < COL; ++col) {
-      int val = d_ele->chess[row][col];
+      int val = chess[row][col];
+     // cout<<"====="<<val;
       assert(1 <= val && val <= NUM);
       ++occurs[val];
     }
-
+//	cout<<'\n';
     if (std::count(occurs, occurs+10, 1) != NUM)
       return false;
   }
@@ -100,7 +100,7 @@ bool solved(Datas* d_ele)
   //check colomn
     int occurs[10] = { 0 };
     for (int row = 0; row < ROW; ++row) {
-      int val = d_ele->chess[row][col];
+      int val = chess[row][col];
       // assert(1 <= val && val <= NUM);
       ++occurs[val];
     }
@@ -113,15 +113,15 @@ bool solved(Datas* d_ele)
   for (int row = 0; row < ROW; row += 3) {
     for (int col = 0; col < COL; col += 3) {
       int occurs[10] = { 0 };
-      ++occurs[d_ele->chess[row  ][col]];
-      ++occurs[d_ele->chess[row  ][col+1]];
-      ++occurs[d_ele->chess[row  ][col+2]];
-      ++occurs[d_ele->chess[row+1][col]];
-      ++occurs[d_ele->chess[row+1][col+1]];
-      ++occurs[d_ele->chess[row+1][col+2]];
-      ++occurs[d_ele->chess[row+2][col]];
-      ++occurs[d_ele->chess[row+2][col+1]];
-      ++occurs[d_ele->chess[row+2][col+2]];
+      ++occurs[chess[row  ][col]];
+      ++occurs[chess[row  ][col+1]];
+      ++occurs[chess[row  ][col+2]];
+      ++occurs[chess[row+1][col]];
+      ++occurs[chess[row+1][col+1]];
+      ++occurs[chess[row+1][col+2]];
+      ++occurs[chess[row+2][col]];
+      ++occurs[chess[row+2][col+1]];
+      ++occurs[chess[row+2][col+2]];
 
       if (std::count(occurs, occurs+10, 1) != NUM)
         return false;
