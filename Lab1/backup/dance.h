@@ -14,7 +14,6 @@ struct Node;
 typedef Node Column;
 struct Node
 {
-
     Node* left;
     Node* right;
     Node* up;
@@ -113,20 +112,6 @@ struct Dance
 			  spaces[nspaces++] = cell;
 		  }
 		  chess= (int (*)[COL])board;
-//		  int (*t_chess)[COL] = (int (*)[COL])board;
-//		  chess= new int [ROW][COL];
-//		  for(int i=0;i<ROW;++i){
-//		  	for(int j=0;j<COL;++j){
-//		  		chess[i][j]=t_chess[i][j];
-//		  	}
-//		  }
-//		  for(int i=0;i<ROW;++i){
-//		  	for(int j=0;j<COL;++j){
-//		  		cout<<chess[i][j];
-//		  	}
-//		  	cout<<'\n';
-//		  }
-		  
 		  
 		  
         stack_.reserve(100);
