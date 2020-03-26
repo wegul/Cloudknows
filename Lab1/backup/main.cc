@@ -34,27 +34,32 @@ void* reader(void* temp){
 	char puzzle[128];
   while (fgets(puzzle, sizeof puzzle, fp) != NULL) {
     if (strlen(puzzle) >= N) {
-   	 pthread_mutex_lock(&mutex1);
+   	 //pthread_mutex_lock(&mutex1);
       ++total;
       Ques q;
       q.serial=total;
       memcpy(q.puz,puzzle,sizeof puzzle);
       list.push_back(q);  
-      pthread_mutex_unlock(&mutex1); 
+      //pthread_mutex_unlock(&mutex1); 
       pthread_cond_broadcast(&dataready);
     }
   }
+  pthread_cond_destroy(&dataready);
 }
 void* solver(void*){
 	while(1){
-	
+		pthread_mutex_lock(&mutex2);
+		//cout<<pthread_self()<<"lock\n";
 			while(list.empty()){
-				while(total>=4){
+				cout<<"wait\n";
+				pthread_cond_wait(&dataready, &mutex2);
+				if(total>=1000){
 				pthread_mutex_unlock(&mutex2); 
 				pthread_exit(NULL);
 				}
 			}
-			pthread_mutex_lock(&mutex2);
+			
+			
 			Ans a;
 			a.serial=list.front().serial;
 			for(int i=0;i<N;++i){
