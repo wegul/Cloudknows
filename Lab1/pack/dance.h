@@ -1,11 +1,14 @@
+#ifndef DANCE_H
+#define DANCE_H
 #include <assert.h>
 #include <memory.h>
-#include <map>
 #include <vector>
-
-#include "sudoku.h"
+#include<map>
+#include"sudoku.h"
+#include<iostream>
 using namespace std;
 
+map<int, Ans>results;
 struct Node;
 typedef Node Column;
 struct Node
@@ -26,6 +29,9 @@ const int kRow = 100, kCol = 200, kBox = 300;
 
 struct Dance
 {
+	int serial;
+
+	
     Column* root_;
     int*    inout_;
     Column* columns_[400];
@@ -93,7 +99,6 @@ struct Dance
     Dance(int inout[81]) : inout_(inout), cur_node_(0)
     {
         stack_.reserve(100);
-
         root_ = new_column();
         root_->left = root_->right = root_;
         memset(columns_, 0, sizeof(columns_));
@@ -207,11 +212,11 @@ struct Dance
                         val = n->name % 10;
                     n = n->right;
                 }
-
-                //assert(cell != -1 && val != -1);
+                assert(cell != -1 && val != -1);
                 inout_[cell] = val;
             }
             return true;
+
         }
 
         Column* const col = get_min_column();
@@ -252,8 +257,11 @@ struct Dance
     }
 };
 
-bool solve_sudoku_dancing_links(Datas* d_ele,int unused)
-{
-  Dance d(d_ele->board);
-  return d.solve();
-}
+//bool solve_sudoku_dancing_links( int *b, int seri)
+//{
+//	serial=seri;
+//  Dance dan(board);
+//  return d.solve();
+//}
+
+#endif
