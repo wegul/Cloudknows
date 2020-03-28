@@ -3,12 +3,9 @@
 #include <assert.h>
 #include <memory.h>
 #include <vector>
-#include<map>
 #include"sudoku.h"
 #include<iostream>
 using namespace std;
-
-map<int, Ans>results;
 struct Node;
 typedef Node Column;
 struct Node
@@ -257,11 +254,5 @@ struct Dance
     }
 };
 
-//bool solve_sudoku_dancing_links( int *b, int seri)
-//{
-//	serial=seri;
-//  Dance dan(board);
-//  return d.solve();
-//}
 
 #endif

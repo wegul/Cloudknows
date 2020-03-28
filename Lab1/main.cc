@@ -7,6 +7,7 @@
 #include<deque>
 #include <sys/sysinfo.h>
 #include<fstream>
+#include<map>
 int64_t now()
 {
   struct timeval tv;
@@ -18,21 +19,19 @@ int limit=0;
 int total;
 int total_solved;
 deque<Ques>list;
-
+map<int, Ans>results;
 pthread_cond_t dataready;
-pthread_mutex_t mutex1=PTHREAD_MUTEX_INITIALIZER, mutex2=PTHREAD_MUTEX_INITIALIZER,mutex3=PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex2=PTHREAD_MUTEX_INITIALIZER,mutex3=PTHREAD_MUTEX_INITIALIZER;
 void* reader(void* temp){
 	FILE* fp =(FILE*)temp;
 	char puzzle[128];
   while (fgets(puzzle, sizeof puzzle, fp) != NULL) {
     if (strlen(puzzle) >= N) {
-   	 //pthread_mutex_lock(&mutex1);
       ++total;
       Ques q;
       q.serial=total;
       memcpy(q.puz,puzzle,sizeof puzzle);
       list.push_back(q);  
-      //pthread_mutex_unlock(&mutex1); 
       pthread_cond_broadcast(&dataready);
     }
   }
@@ -83,7 +82,7 @@ int main()
 		
 	  cin>>name;
 	  
-	  limit=atoi(&name[4]);
+	  limit=atoi(&name[6]);
 	  FILE* fp = fopen(name, "r");
 		
 	  pthread_cond_init(&dataready, NULL);
