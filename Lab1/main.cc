@@ -79,7 +79,6 @@ int main()
 		name=(char *)malloc(sizeof(char));//must malloc space  before use!!!!
 		total=0;
 		total_solved=0;
-		
 	  cin>>name;
 	  
 	  limit=atoi(&name[6]);
@@ -88,6 +87,7 @@ int main()
 	  pthread_cond_init(&dataready, NULL);
 	  pthread_t file_read; 
 	  pthread_t sudoku_solve[PROC];
+	  
 	   int64_t start = now();
 	   //========================
 	  pthread_create(&file_read,NULL,reader,(void*)(fp)); 
@@ -96,17 +96,16 @@ int main()
 	  }
 	  	pthread_join(sudoku_solve[0], NULL);
 	  //======================
-		int64_t end = now();  
-	  double sec = (end-start)/1000000.0;
-	  printf("%f sec %f ms each %d\n", sec, 1000*sec/total, total_solved);
+	  int64_t end = now(); 
+	  
 	  for(int i=1;i<=limit;++i){
 	  	 for(int j=0;j<N;++j){
-		  	 	int t = results[i].answer[j];
-				cout <<t;
+				cout <<results[i].answer[j];
 		    }
 		  cout<<'\n';
 	  }
+	  double sec = (end-start)/1000000.0;
+	  printf("%f sec %f ms each %d\n", sec, 1000*sec/total, total_solved);
 	}
   return 0;
 }
-
