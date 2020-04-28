@@ -1,0 +1,2 @@
+command:
+	chmod +x ./httpserver
