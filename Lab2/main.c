@@ -1,36 +1,73 @@
 #include"Server.h"
 struct PForm{
+	int sockfd;
 	int method;//0 for GET  1 for POST
 	char* filename;
 	string content; 
 };
-int main(){
-	int port=8888;
-	Server server(port);//set port, the server starts listening
-	int client_sockfd=server.acc_conn();
-	int cnt=0;
-	while(1){//receive client's requests
-		++cnt;
-		string buffer=server.recv_request(client_sockfd);//message from client
-		//THREAD PROCESS: (200OK  CONSIDERED ONLY)
-		
-		//PForm task=server.parser(buffer);
-		PForm task;
-//		task.filename="index.html";
-//		task.method=0;
-//		task.content="";
-		task.filename="Post_show";
-		task.method=1;
-		task.content="postpostpost\n";
+queue<PForm>pipeline;
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+pthread_t* pthread_pool;
+int pthread_num,port;
+Server* server;
+void* run(void *){
+	while(1){
+		pthread_mutex_lock(&mutex);
+		while(pipeline.empty()){
+			pthread_cond_wait(&cond,&mutex);
+		}
+		PForm task=pipeline.front();
+		pipeline.pop();
+		pthread_mutex_unlock(&mutex);
 		if(task.method==0){//GET
-			server.send_response(client_sockfd,task.filename);
+			server->send_response(task.sockfd,task.filename);
 		}
 		else if(task.method==1){//POST
 			ofstream outfile(task.filename,ios::app);
 			outfile<<task.content;
 			outfile.close();
-			server.send_response(client_sockfd,task.filename);
-			cout<<cnt<<'\n';
+			server->send_response(task.sockfd,task.filename);
 		}
+	}
+}
+int main(int argc, char *argv[]){
+	pthread_mutex_init(&mutex,NULL);
+	cond = PTHREAD_COND_INITIALIZER;
+	//string ip=argv[2];
+	//port=atoi(argv[4]);
+	port=8888;
+	if(argc==7)
+		pthread_num=atoi(argv[6]);
+	else pthread_num=4;
+	
+	pthread_pool=new pthread_t[pthread_num];
+	for(int i=0;i<pthread_num;i++)
+	{
+		pthread_create(pthread_pool+i, NULL, run, NULL);
+		pthread_detach(pthread_pool[i]);//分离线程
+	}
+	
+	server=new Server(port);//set port, the server starts listening
+
+	string buffer="";
+	int client_sockfd;
+	while(1){//message from client){//receive client's requests
+		//THREAD PROCESS: (200OK  CONSIDERED ONLY)
+		client_sockfd=server->acc_conn();
+		//PForm task=server.parser(buffer);
+		PForm task;
+		task.sockfd=client_sockfd;
+		task.filename="index.html";
+		task.method=0;
+		task.content="";
+//		task.filename="Post_show";
+//		task.method=1;
+//		task.content="postpostpost\n";
+		pthread_mutex_lock(&mutex);
+		pipeline.push(task);
+		//wake up
+		pthread_cond_signal(&cond);
+		pthread_mutex_unlock(&mutex);
 	}
 }

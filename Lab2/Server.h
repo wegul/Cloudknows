@@ -12,11 +12,13 @@ using namespace std;
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include<pthread.h>
+#include<queue>
 class Server{
 	public:
 		sockaddr_in server_addr;
 		int server_port;
 		int listenfd;
+		Server(){}
 		Server (int port){
 			listenfd = socket(AF_INET,SOCK_STREAM,0); 
 			 int reuse=1;
@@ -28,29 +30,31 @@ class Server{
 			   if (bind(listenfd,(struct sockaddr *)&server_addr,sizeof(server_addr)) != 0 ){
 			   	 perror("bind failed!!\n"); 
 			   	 close(listenfd); 
-			   	 exit(0);
 			   }
-			    if (listen(listenfd,5) != 0 ) {
+			    if (listen(listenfd,10) != 0 ) {
 			     perror("listen failed!\n"); 
 			     close(listenfd);
 			     }
 		}
 		int acc_conn(){
 			sockaddr_in client_addr;
-			int socklen=sizeof(sockaddr);
+			int socklen=sizeof(client_addr);
 			// multiple accept!!!!!!!!!!!
 			int client_sockfd=accept(this->listenfd,(struct sockaddr *)&client_addr,(socklen_t*)&socklen);
 			cout<<"client connected "<<inet_ntoa(client_addr.sin_addr)<<'\n';
 			return client_sockfd;
 		}
-		string recv_request(int client_sockfd){
+		int recv_request(string& str,int client_sockfd){
 			 char msg[1024];
-			 if (recv(client_sockfd,msg,sizeof(msg),0)>=0)    // 接收客户端的请求报文。
+			 int mark=0;
+			 if (recv(client_sockfd,msg,sizeof(msg),0)>=0) {   // 接收客户端的请求报文。
+			 		mark=1;
 			 		cout<<"request received\n";
     				//cout<<"request received\n"<<msg<<'\n';
-    			string str=msg;
+    				str=msg;
+    			}
     			//TODO: handle the state code
-    			return str;
+    			return mark;
 		}
 		int send_response(int client_sockfd, char* filename){
 			int flag=0;//0 for 200  1 for 404
@@ -76,26 +80,11 @@ class Server{
 			header+="Content-length: "+to_string(strlen(body))+"\n";
 			header+="Content-type: text/html\n\n";
 			sprintf(msg,"%s%s",header.data(),body);
-			cout<<"发送:\n"<<msg<<'\n';
+			cout<<"发送!!\n";
 			//delete it later  
 			close(listenfd);
 			return send(client_sockfd,msg,strlen(msg),0);
 		}
-//		int _send(int client_sockfd, char* filename){
-//			char buffer[2048];
-//			ifstream infile(filename);
-//			if(!infile) cout<<"no such file\n";
-//			infile.seekg(0,ios::end);
-//			int len=infile.tellg();
-//			infile.seekg(0,ios::beg);
-//			
-//			infile.read(buffer,sizeof(buffer));
-//			infile.close();
-//			cout<<"发送:\n"<<buffer<<"\n";
-//			//delete it later  
-//			close(listenfd);
-//			return send(client_sockfd,buffer,strlen(buffer),0);
-//		}
 };
 
 
