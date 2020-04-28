@@ -1,100 +1,87 @@
-#include"Server.h"
-struct PForm{
-	int code;
-	int sockfd;
-	int method;//0 for GET  1 for POST
-	char* filename;
-	string content; 
-};
-queue<PForm>pipeline;
+#include <exception>
+#include <queue>
+#include <assert.h>
+#include "httpserver.h"
+using namespace std;
+#define PTHREAD_NUM 10
+
 pthread_mutex_t mutex;
 pthread_cond_t cond;
-pthread_t* pthread_pool;
-int pthread_num,port=8880;
-string ip="127.0.0.1";
-Server* server;
-void* run(void *){
-	while(1){
+queue<httpsever> queue1;
+int pthread_num;
+pthread_t *pthread_pool;
+
+void* run(void* arg)
+{
+	while(true)
+	{
 		pthread_mutex_lock(&mutex);
-		while(pipeline.empty()){
+		while(queue1.empty())
+		{
 			pthread_cond_wait(&cond,&mutex);
 		}
-		cout<<"发送!!\n";
-		PForm task=pipeline.front();
-		pipeline.pop();
+		httpsever http=queue1.front();
+		queue1.pop();
 		pthread_mutex_unlock(&mutex);
-//		if(task.method==0){//GET
-		server->send_response(tasl.method,task.sockfd,task.filename);
-//		}
-//		else if(task.method==1){//POST
-//			ofstream outfile(task.filename,ios::app);
-//			outfile<<task.content;
-//			outfile.close();
-//			server->send_response(task.method, task.sockfd,task.filename);
-//		}
+		http.solve();
 	}
 }
-PForm parser(string buffer){
-	PForm task;
-	//check method
-	string filename="";
-	int get_pos=buffer.find("GET");
-	int post_pos=buffer.find("POST");
-	if(get_pos!=string::npos){
-		task.method=0;
-		filename=buffer.substr(get_pos+5,buffer.find("HTTP")-get_pos-6);
-		task.filename=filename.c_str();
-	}
-	else if(post_pos!=string::npos){
-		task.method=1;
-		filename=buffer.substr(post_pos+5,buffer.find("HTTP")-post_pos-6);
-		task.filename=filename.c_str();
-	}
-	else{
-		task.method=-1;
-		// below to send bad
-		task.filename="501.html";
-	}
-	return task;
-}
-int main(int argc, char *argv[]){
+
+int main(int argc, char *argv[])
+{
 	pthread_mutex_init(&mutex,NULL);
 	cond = PTHREAD_COND_INITIALIZER;
-	string ip=argv[2];
-	port=atoi(argv[4]);
-	if(argc==7)
-		pthread_num=atoi(argv[6]);
-	else pthread_num=1;
-	pthread_pool=new pthread_t[pthread_num];
-	for(int i=0;i<pthread_num;i++)
+	if(argc < 5)
 	{
-		pthread_create(pthread_pool+i, NULL, run, NULL);
-		pthread_detach(pthread_pool[i]);//分离线程
+		printf("need ip and port\n");
+		return 1;
 	}
-	
-	server=new Server(port,ip);//set port, the server starts listening
-
-	string buffer="";
-	int client_sockfd=-1;
-	while(1){//message from client){//receive client's requests
-		client_sockfd=server->acc_conn();
-		assert(client_sockfd>=0);
-		if(server->recv_request(buffer,client_sockfd)){
-			PForm task=parser(buffer);
-			task.sockfd=client_sockfd;
-//			task.filename="index.html";
-//			task.method=0;
-//			task.content="";
-	//		task.filename="Post_show";
-	//		task.method=1;
-	//		task.content="postpostpost\n";
-			pthread_mutex_lock(&mutex);
-			pipeline.push(task);
-			//wake up
-			pthread_cond_signal(&cond);
-			pthread_mutex_unlock(&mutex);
-			}
-			else break;
+	string ip = argv[2];
+	int port = atoi(argv[4]);
+	if(argc==7)
+		pthread_num = atoi(argv[6]);
+	else pthread_num = PTHREAD_NUM;
+	pthread_pool = new pthread_t[pthread_num];
+	if(!pthread_pool)
+		throw std::exception();
+	for(int i=0; i<pthread_num; i++)
+	{
+		if(pthread_create(pthread_pool+i, NULL, run, NULL) != 0);
+		if(pthread_detach(pthread_pool[i]))
+		{
+			delete [] pthread_pool;
+			throw std::exception();
+		}
 	}
-	close(server->listenfd);
+	int sock;
+	int connetionfd;
+	struct sockaddr_in server_address;
+	memset(&server_address,0,sizeof(server_address));
+	server_address.sin_family = AF_INET;
+	server_address.sin_port = htons(port);
+	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+	sock = socket(AF_INET,SOCK_STREAM,0);
+	int reuse=1;
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+	assert(sock>=0);
+	int ret = bind(sock, (struct sockaddr*)&server_address, sizeof(server_address));
+	assert(ret!=-1);
+	ret = listen(sock, 10);
+	assert(ret!=-1);
+	while(1)
+	{
+		struct sockaddr_in client;
+		socklen_t client_addrlen = sizeof(client);
+		connetionfd = accept(sock, (struct sockaddr*)&client, &client_addrlen);
+		cout<<"client connected "<<inet_ntoa(client.sin_addr)<<'\n';
+		assert(connetionfd>=0);
+		httpsever http(connetionfd);
+		pthread_mutex_lock(&mutex);
+		queue1.push(http);
+		pthread_cond_signal(&cond);
+		pthread_mutex_unlock(&mutex);
+	}
+	close(sock);
+	return 0;
 }
+

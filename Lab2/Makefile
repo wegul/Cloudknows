@@ -1,3 +1,3 @@
 all: httpserver
-httpserver:Server.h main.c 
+httpserver:  httpserver.h main.c 
 	g++ -pthread -std=c++11 -g -o $@ $^
