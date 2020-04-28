@@ -1,6 +1,7 @@
 #ifndef _HTTPSERVER_H_
 #define _HTTPSERVER_H_
 #include <iostream>
+#include<fstream>
 #include<cstring>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -16,8 +17,6 @@
 #include <sys/sendfile.h>
 #include <sys/wait.h>
 using namespace std;
-
-
 #define BUFFER_SIZE 101010
 class  httpsever
 {
@@ -99,28 +98,19 @@ class  httpsever
 									continue;
 								}
 								string entity=request.substr(entity_pos,request.length()-entity_pos);
-
-								//请求体按照Name=xxx&ID=xxx排列时才处理
 								int namepos=entity.find("Name="),idpos=entity.find("&ID=");
-								if(namepos==-1||idpos==-1||idpos<=namepos) //请求体中存在Name和ID并且按照Name、ID排列
+								if(namepos==-1||idpos==-1||idpos<=namepos)
 								{
 									Bad_Request(method,url);
 									continue;
 								}
-								/* if(entity.find("=",idpos+4)!=string::npos){
-								     Bad_Request(method,url);
-								     continue;
-								 }*/
-
 								string name,id;
 								name=entity.substr(namepos+5,idpos-namepos-5);
 								id=entity.substr(idpos+4);
 								post_method(name,id);
 							}
-
 						}
 					}
-
 				}
 				else
 				{
@@ -164,38 +154,40 @@ class  httpsever
 		}
 		void get_method(string method,string url)
 		{
+		//cout<<"in GET METHOD :"<<url<<'\n';
 			int len=url.length();
-			string tmp="./src";
-			if(url.find(".")==string::npos)
-			{
-				if(url[len-1]=='/'||url.length()==0)
-				{
-					tmp+=url+"index.html";
-				}
-				else tmp+=url+"/index.html";
+			cout<<"URL IS=="<<url<<'\n';
+			string tmp="";
+			if(url.find("index.html")!=string::npos){
+				tmp="index.html";
 			}
-			else tmp+=url;
-			//cout<<tmp<<endl;
-			int fd=open(tmp.c_str(),O_RDONLY);//若所有欲核查的权限都通过了检查则返回0值，表示成功，只要有一个权限被禁止则返回-1。
+			else if(url.find("Post_show")!=string::npos){
+				tmp="Post_show";
+			}
+			int fd=open(tmp.c_str(), O_RDONLY);
 			if(fd>=0)
 			{
+				cout<<"filename=="<<tmp<<'\n';
 				struct stat stat_buf;
-				fstat(fd,&stat_buf);//通过文件名filename获取文件信息，并保存在buf所指的结构体stat中
+				fstat(fd,&stat_buf);
 				char outstring[1024];
-				sprintf(outstring,"Http/1.1 200 OK\r\nContent-Length:%d\r\nContent-Type: text/html\r\n\r\n",stat_buf.st_size);//输出到命令行
-				write(sockfd,outstring,strlen(outstring));//sockfd是描述符,类似于open函数
+				sprintf(outstring,"Http/1.1 200 OK\r\nContent-Length:%d\r\nContent-Type: text/html\r\n\r\n",stat_buf.st_size);
+				write(sockfd,outstring,strlen(outstring));
 				sendfile(sockfd,fd,0,stat_buf.st_size);
 			}
-			else //Do not exist the path return 404
+			else 
 			{
 				Bad_Request(method,url);
 			}
 		}
 		void post_method(string name,string id)
 		{
+			ofstream outfile("Post_show");
 			string en="<html><title>POST Method</title><body bgcolor=ffffff>\n";
 			string en1="Your name: "+name+"\nYour id: "+id+"\n"+"<hr><em>HTTP Web Server</em>\n</body></html>\n";
 			en+=en1;
+			outfile<<en;
+			outfile.close();
 			string tmp="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: "+to_string(en.length())+"\r\n\r\n";
 			string finalentity=tmp+en;
 			char outstring[1024];

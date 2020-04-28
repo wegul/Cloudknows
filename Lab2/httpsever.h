@@ -154,16 +154,13 @@ class  httpsever
 		void get_method(string method,string url)
 		{
 			int len=url.length();
-			string tmp="./src";
-			if(url.find(".")==string::npos)
-			{
-				if(url[len-1]=='/'||url.length()==0)
-				{
-					tmp+=url+"index.html";
-				}
-				else tmp+=url+"/index.html";
+			string tmp="";
+			if(url.find("index.html")){
+				temp="index.html";
 			}
-			else tmp+=url;
+			else if(url.find("Post_show")){
+				temp="Post_show";
+			}
 			int fd=open(tmp.c_str(),O_RDONLY);
 			if(fd>=0)
 			{
